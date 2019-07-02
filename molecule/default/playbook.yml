@@ -1,0 +1,53 @@
+---
+- name: 'Create inventory'
+  hosts: 'all'
+  tasks:
+    - name: 'Add new host'
+      add_host:
+        name: "{{ ansible_facts['hostname'] }}"
+        group: 'openstack_api'
+        openstack_api_host: "{{ ansible_facts['hostname'] }}"
+        openstack_api_validate: true
+        openstack_api_url: 'https://auth.cloud.ovh.net/v3'
+        openstack_api_user: 'HEtY7aK2teFC'
+        openstack_api_pass: 'hSN2tUMKUaSzDJtF3WpXKdKnxgjwzaVT'
+        openstack_project_name: '8068191622168903'
+        openstack_project_id: '9b2418039f634dd1acc8dfe1480948e2'
+        openstack_region: 'UK1'
+      changed_when: false
+
+- name: 'Converge - create network'
+  hosts: 'all'
+  roles:
+    - name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
+  vars:
+    target_action: 'network'
+    target_state: 'present'
+    target_args:
+      name: 'ansible_network'
+      subnet: '192.168.1.0/24'
+      dns:
+        - '192.168.1.1'
+      routes:
+        - destination: '192.168.2.0/24'
+          nexthop: '192.168.1.2'
+      gateway: '192.168.1.1'
+      dhcp_enabled: true
+
+- name: 'Converge - create host'
+  hosts: 'all'
+  roles:
+    - name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
+  vars:
+    target_action: 'server_persistent'
+    target_state: 'present'
+    target_args:
+      name: 'srv1'
+      image: 'Debian 9'
+      flavor: 's1-2'
+      group_name: 'cust1'
+      group_policies:
+        - 'affinity'
+      public: true
+      networks:
+        - net-name: 'Ext-Net'

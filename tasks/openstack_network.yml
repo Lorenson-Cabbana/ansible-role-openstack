@@ -1,0 +1,39 @@
+---
+- name: 'Create network'
+  os_network:
+    cloud: 'openstack'
+    validate_certs: "{{ openstack_api_validate }}"
+    state: "{{ target_state }}"
+    name: "{{ target_args.name }}"
+    external: "{{ target_args.external | default(false) }}"
+    region_name: "{{ openstack_region }}"
+
+- name: 'Create subnet with gateway'
+  os_subnet:
+    cloud: 'openstack'
+    validate_certs: "{{ openstack_api_validate }}"
+    name: "{{ target_args.name }}"
+    state: "{{ target_state }}"
+    region_name: "{{ openstack_region }}"
+    network_name: "{{ target_args.name }}"
+    cidr: "{{ target_args.subnet }}"
+    gateway_ip: "{{ target_args.gateway }}"
+    host_routes: "{{ target_args.routes | default([]) }}"
+    enable_dhcp: "{{ target_args.dhcp_enabled }}"
+    dns_nameservers: "{{ target_args.dns | default([]) }}"
+  when: target_args.gateway is defined
+
+- name: 'Create subnet w/o gateway'
+  os_subnet:
+    cloud: 'openstack'
+    validate_certs: "{{ openstack_api_validate }}"
+    name: "{{ target_args.name }}"
+    state: "{{ target_state }}"
+    region_name: "{{ openstack_region }}"
+    network_name: "{{ target_args.name }}"
+    cidr: "{{ target_args.subnet }}"
+    no_gateway_ip: true
+    host_routes: "{{ target_args.routes | default([]) }}"
+    enable_dhcp: "{{ target_args.dhcp_enabled }}"
+    dns_nameservers: "{{ target_args.dns | default([]) }}"
+  when: target_args.gateway is not defined

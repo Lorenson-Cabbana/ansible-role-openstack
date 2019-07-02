@@ -1,0 +1,8 @@
+openstack_api_url: 'https://horizon.example.com'
+openstack_api_validate: true
+openstack_api_user: 'ansible'
+openstack_api_pass: 'CloudyWithAChanceOfContainers'
+
+openstack_project_name: 'my_first_openstack'
+openstack_project_id: '123567890abcdef'
+openstack_region: 'EU1'

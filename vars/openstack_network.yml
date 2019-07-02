@@ -1,0 +1,4 @@
+---
+supported_states:
+  - present
+  - absent

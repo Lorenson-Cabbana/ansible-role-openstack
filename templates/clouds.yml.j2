@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+clouds:
+  openstack:
+    auth:
+      auth_url: "{{ openstack_api_url }}"
+      username: "{{ openstack_api_user }}"
+      password: "{{ openstack_api_pass }}"
+      project_id: "{{ openstack_project_id }}"
+      project_name: "{{ openstack_project_name }}"
+      user_domain_name: "Default"
+    region_name: "{{ openstack_region }}"
+    interface: "public"
+    identity_api_version: 3

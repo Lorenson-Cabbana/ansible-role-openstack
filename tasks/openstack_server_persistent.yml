@@ -1,0 +1,27 @@
+---
+- name: 'Create host group'
+  os_server_group:
+    cloud: 'openstack'
+    validate_certs: "{{ openstack_api_validate }}"
+    name: "{{ target_args.group_name }}"
+    state: "{{ target_state }}"
+    policies: "{{ target_args.group_policies }}"
+
+- name: 'Create host with public IP'
+  os_server:
+    cloud: 'openstack'
+    validate_certs: "{{ openstack_api_validate }}"
+    name: "{{ target_args.name }}"
+    state: "{{ target_state }}"
+    image: "{{ target_args.image }}"
+    flavor: "{{ target_args.flavor }}"
+    region_name: "{{ openstack_region }}"
+    public_ip: true
+    boot_from_volume: true
+    key_name: 'ansible_rsa'
+    nics: "{{ target_args.networks }}"
+    terminate_volume: true
+    meta:
+      hostname: "{{ target_args.name }}"
+      group: "{{ target_args.group_name }}"
+  when: target_args.public
