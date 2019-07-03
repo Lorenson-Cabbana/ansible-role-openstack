@@ -7,7 +7,7 @@
     state: "{{ target_state }}"
     policies: "{{ target_args.group_policies }}"
 
-- name: 'Create host with public IP'
+- name: 'Create host'
   os_server:
     cloud: 'openstack'
     validate_certs: "{{ openstack_api_validate }}"
@@ -16,12 +16,12 @@
     image: "{{ target_args.image }}"
     flavor: "{{ target_args.flavor }}"
     region_name: "{{ openstack_region }}"
-    public_ip: true
+    public_ip: "{{ target_args.public | default(false) }}"
     boot_from_volume: true
-    key_name: 'ansible_rsa'
-    nics: "{{ target_args.networks }}"
     terminate_volume: true
+    volume_size: "{{ target_args.disk_gb }}"
+    key_name: 'ansible_managed_rsa'
+    nics: "{{ target_args.networks }}"
     meta:
       hostname: "{{ target_args.name }}"
       group: "{{ target_args.group_name }}"
-  when: target_args.public

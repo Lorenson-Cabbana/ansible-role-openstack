@@ -10,44 +10,78 @@
         openstack_api_validate: true
         openstack_api_url: 'https://auth.cloud.ovh.net/v3'
         openstack_api_user: 'HEtY7aK2teFC'
-        openstack_api_pass: 'hSN2tUMKUaSzDJtF3WpXKdKnxgjwzaVT'
+        openstack_api_pass: 'KbSaUw5JPB4JbLTquTfzYZ3DrZj2EqYJ'
         openstack_project_name: '8068191622168903'
         openstack_project_id: '9b2418039f634dd1acc8dfe1480948e2'
         openstack_region: 'UK1'
       changed_when: false
 
-- name: 'Converge - create network'
-  hosts: 'all'
-  roles:
-    - name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
-  vars:
-    target_action: 'network'
-    target_state: 'present'
-    target_args:
-      name: 'ansible_network'
-      subnet: '192.168.1.0/24'
-      dns:
-        - '192.168.1.1'
-      routes:
-        - destination: '192.168.2.0/24'
-          nexthop: '192.168.1.2'
-      gateway: '192.168.1.1'
-      dhcp_enabled: true
+- name: 'Converge'
+  hosts: 'openstack_api'
+  tasks:
+    - name: 'Create mgmt network'
+      import_role:
+        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
+      vars:
+        target_action: 'network'
+        target_state: 'present'
+        target_args:
+          name: 'mgmt'
+          subnet: '192.168.1.0/24'
+          dns:
+            - '192.168.1.1'
+          gateway: '192.168.1.1'
+          dhcp_enabled: true
 
-- name: 'Converge - create host'
-  hosts: 'all'
-  roles:
-    - name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
-  vars:
-    target_action: 'server_persistent'
-    target_state: 'present'
-    target_args:
-      name: 'srv1'
-      image: 'Debian 9'
-      flavor: 's1-2'
-      group_name: 'cust1'
-      group_policies:
-        - 'affinity'
-      public: true
-      networks:
-        - net-name: 'Ext-Net'
+    - name: 'Create router'
+      import_role:
+        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
+      vars:
+        target_action: 'server_persistent'
+        target_state: 'present'
+        target_args:
+          name: 'gw'
+          image: 'Debian 9'
+          flavor: 's1-2'
+          disk_gb: 10
+          group_name: 'mgmt'
+          group_policies:
+            - 'affinity'
+          networks:
+            - net-name: 'Ext-Net'
+            - net-name: 'mgmt'
+              v4-fixed-ip: '192.168.1.1'
+
+    - name: 'Create customer network'
+      import_role:
+        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
+      vars:
+        target_action: 'network'
+        target_state: 'present'
+        target_args:
+          name: 'CustNet'
+          subnet: '192.168.2.0/24'
+          dns:
+            - '192.168.2.1'
+          gateway: '192.168.2.1'
+          dhcp_enabled: true
+          connect_hosts:
+            - name: 'gw'
+              fixed_ip: '192.168.2.1'
+
+    - name: 'Create Customer system'
+      import_role:
+        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
+      vars:
+        target_action: 'server_persistent'
+        target_state: 'present'
+        target_args:
+          name: 'CustDB'
+          image: 'Debian 9'
+          flavor: 's1-2'
+          disk_gb: 10
+          group_name: 'CustGrp'
+          group_policies:
+            - 'affinity'
+          networks:
+            - net-name: 'CustNet'

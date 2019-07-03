@@ -11,7 +11,6 @@
   include_tasks: 'openstack_install.yml'
   loop: "{{ openstack_deps['results'] }}"
   when:
-    - true # remove me!
     - item.not_found | length != 0
 
 - name: "Load {{ target_action }} variables"
@@ -53,7 +52,7 @@
   os_keypair:
     cloud: 'openstack'
     state: 'present'
-    name: 'ansible_rsa'
+    name: 'ansible_managed_rsa'
     public_key_file: "{{ ansible_env.HOME }}/.ssh/id_openstack_rsa.pub"
 
 - name: "Run {{ target_action }} playbook"

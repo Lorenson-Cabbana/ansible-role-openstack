@@ -2,3 +2,5 @@
 supported_states:
   - present
   - absent
+
+network_list: []
