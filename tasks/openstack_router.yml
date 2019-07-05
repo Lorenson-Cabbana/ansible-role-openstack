@@ -1,0 +1,8 @@
+---
+- name: 'Create router'
+  os_router:
+    cloud: 'openstack'
+    validate_certs: "{{ openstack_api_validate }}"
+    name: "rtr-{{ target_args.name }}"
+    state: "{{ target_state }}"
+    interfaces: "{{ target_args.interfaces }}"

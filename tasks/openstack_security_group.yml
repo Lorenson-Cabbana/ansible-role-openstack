@@ -1,0 +1,33 @@
+---
+- name: 'Create Security group'
+  os_security_group:
+    cloud: 'openstack'
+    validate_certs: "{{ openstack_api_validate }}"
+    name: "secgrp-{{ target_args.name }}"
+    description: "{{ target_args.description | default('') }}"
+    state: "{{ target_state }}"
+  register: 'security_group_facts'
+
+- block:
+  - name: 'Add rules to Security group'
+    os_security_group_rule:
+      cloud: 'openstack'
+      validate_certs: "{{ openstack_api_validate }}"
+      security_group: "secgrp-{{ target_args.name }}"
+      protocol: "{{ rule.proto }}"
+      port_range_min: "{{ rule.port_min }}"
+      port_range_max: "{{ rule.port_max }}"
+      remote_ip_prefix: "{{ rule.remote_ips }}"
+    loop: "{{ target_args.rules }}"
+    loop_control:
+      loop_var: 'rule'
+
+  - name: 'Apply security groups to hosts'
+    include_tasks: 'openstack_apply_secgrp_host.yml'
+    vars:
+      security_group: "{{ security_group_facts['secgroup']['id'] }}"
+    loop: "{{ target_args.apply_hosts }}"
+    loop_control:
+      loop_var: 'server'
+    when: target_args.apply_hosts is defined
+  when: target_state == 'present'

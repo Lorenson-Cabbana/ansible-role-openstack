@@ -4,7 +4,7 @@
     cloud: 'openstack'
     validate_certs: "{{ openstack_api_validate }}"
     state: "{{ target_state }}"
-    name: "{{ target_args.name }}"
+    name: "net-{{ target_args.name }}"
     external: "{{ target_args.external | default(false) }}"
     region_name: "{{ openstack_region }}"
   register: 'network_created'
@@ -13,26 +13,12 @@
   os_subnet:
     cloud: 'openstack'
     validate_certs: "{{ openstack_api_validate }}"
-    name: "{{ target_args.name }}"
+    name: "subnet-{{ target_args.name }}"
     state: "{{ target_state }}"
     region_name: "{{ openstack_region }}"
-    network_name: "{{ target_args.name }}"
+    network_name: "net-{{ target_args.name }}"
     cidr: "{{ target_args.subnet }}"
     gateway_ip: "{{ target_args.gateway }}"
     host_routes: "{{ target_args.routes | default([]) }}"
     enable_dhcp: "{{ target_args.dhcp_enabled }}"
     dns_nameservers: "{{ target_args.dns | default([]) }}"
-
-- name: 'Create fixed ports for connect_hosts'
-  os_port:
-    cloud: 'openstack'
-    validate_certs: "{{ openstack_api_validate }}"
-    name: "{{ target_args.name }}-{{ connect_host.name }}"
-    network: "{{ target_args.name }}"
-    fixed_ips:
-      - ip_address: "{{ connect_host.fixed_ip }}"
-    device_id: "{{ connect_host.id }}"
-  loop: "{{ target_args.connect_hosts }}"
-  loop_control:
-    loop_var: 'connect_host'
-  when: target_args.connect_hosts is defined
