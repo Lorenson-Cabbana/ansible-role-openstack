@@ -1,27 +1,37 @@
 ---
-- name: 'Create host group'
-  os_server_group:
-    cloud: 'openstack'
-    validate_certs: "{{ openstack_api_validate }}"
-    name: "{{ target_args.group_name }}"
-    state: "{{ target_state }}"
-    policies: "{{ target_args.group_policies }}"
+- block:
+  - name: 'Create host group'
+    os_server_group:
+      cloud: 'openstack'
+      validate_certs: "{{ openstack_api_validate }}"
+      name: "{{ target_args.group_name }}"
+      state: "{{ target_state }}"
+      policies: "{{ target_args.group_policies }}"
 
-- name: 'Create host'
+  - name: 'Create host'
+    os_server:
+      cloud: 'openstack'
+      validate_certs: "{{ openstack_api_validate }}"
+      name: "{{ target_args.name }}"
+      state: 'present'
+      image: "{{ target_args.image }}"
+      flavor: "{{ target_args.flavor }}"
+      region_name: "{{ openstack_region }}"
+      public_ip: "{{ target_args.public | default(false) }}"
+      boot_from_volume: true
+      terminate_volume: true
+      volume_size: "{{ target_args.disk_gb }}"
+      key_name: 'ansible_managed_rsa'
+      nics: "{{ target_args.networks }}"
+      meta:
+        hostname: "{{ target_args.name }}"
+        group: "{{ target_args.group_name }}"
+  when: target_state == 'present'
+
+- name: 'Remove host'
   os_server:
     cloud: 'openstack'
     validate_certs: "{{ openstack_api_validate }}"
     name: "{{ target_args.name }}"
-    state: "{{ target_state }}"
-    image: "{{ target_args.image }}"
-    flavor: "{{ target_args.flavor }}"
-    region_name: "{{ openstack_region }}"
-    public_ip: "{{ target_args.public | default(false) }}"
-    boot_from_volume: true
-    terminate_volume: true
-    volume_size: "{{ target_args.disk_gb }}"
-    key_name: 'ansible_managed_rsa'
-    nics: "{{ target_args.networks }}"
-    meta:
-      hostname: "{{ target_args.name }}"
-      group: "{{ target_args.group_name }}"
+    state: 'absent'
+  when: target_state == 'absent'

@@ -1,5 +1,5 @@
 ---
-- name: 'Create Security group'
+- name: 'Ensure Security group'
   os_security_group:
     cloud: 'openstack'
     validate_certs: "{{ openstack_api_validate }}"

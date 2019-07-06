@@ -1,5 +1,28 @@
 ---
-- name: 'Create network'
+- block:
+  - name: 'Get network ID (remove only)'
+    os_networks_facts:
+      cloud: 'openstack'
+      validate_certs: "{{ openstack_api_validate }}"
+      name: "net-{{ target_args.name }}"
+
+  - name: 'List ports (remove only)'
+    os_port_facts:
+      cloud: 'openstack'
+      validate_certs: "{{ openstack_api_validate }}"
+      filters:
+        network_id: "{{ openstack_networks[0]['id'] }}"
+
+  - name: 'Remove ports (remove only)'
+    os_port:
+      name: "{{ port.id }}"
+      state: 'absent'
+    loop: "{{ openstack_ports }}"
+    loop_control:
+      loop_var: 'port'
+  when: target_state == 'absent'
+
+- name: 'Ensure network'
   os_network:
     cloud: 'openstack'
     validate_certs: "{{ openstack_api_validate }}"
@@ -9,16 +32,34 @@
     region_name: "{{ openstack_region }}"
   register: 'network_created'
 
-- name: 'Create subnet'
-  os_subnet:
-    cloud: 'openstack'
-    validate_certs: "{{ openstack_api_validate }}"
-    name: "subnet-{{ target_args.name }}"
-    state: "{{ target_state }}"
-    region_name: "{{ openstack_region }}"
-    network_name: "net-{{ target_args.name }}"
-    cidr: "{{ target_args.subnet }}"
-    gateway_ip: "{{ target_args.gateway }}"
-    host_routes: "{{ target_args.routes | default([]) }}"
-    enable_dhcp: "{{ target_args.dhcp_enabled }}"
-    dns_nameservers: "{{ target_args.dns | default([]) }}"
+- block:
+  - name: 'Create subnet'
+    os_subnet:
+      cloud: 'openstack'
+      validate_certs: "{{ openstack_api_validate }}"
+      name: "subnet-{{ target_args.name }}"
+      state: "{{ target_state }}"
+      region_name: "{{ openstack_region }}"
+      network_name: "net-{{ target_args.name }}"
+      cidr: "{{ target_args.subnet }}"
+      gateway_ip: "{{ target_args.gateway }}"
+      host_routes: "{{ target_args.routes | default([]) }}"
+      enable_dhcp: "{{ target_args.dhcp_enabled }}"
+      dns_nameservers: "{{ target_args.dns | default([]) }}"
+    when: target_args.gateway is defined
+
+  - name: 'Create subnet'
+    os_subnet:
+      cloud: 'openstack'
+      validate_certs: "{{ openstack_api_validate }}"
+      name: "subnet-{{ target_args.name }}"
+      state: "{{ target_state }}"
+      region_name: "{{ openstack_region }}"
+      network_name: "net-{{ target_args.name }}"
+      cidr: "{{ target_args.subnet }}"
+      no_gateway_ip: true
+      host_routes: "{{ target_args.routes | default([]) }}"
+      enable_dhcp: "{{ target_args.dhcp_enabled }}"
+      dns_nameservers: "{{ target_args.dns | default([]) }}"
+    when: target_args.gateway is not defined
+  when: target_state == 'present'

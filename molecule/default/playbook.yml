@@ -28,6 +28,7 @@
         target_args:
           name: 'mgmt'
           subnet: '192.168.1.0/24'
+          gateway: '192.168.1.1'
           dns:
             - '192.168.1.1'
           dhcp_enabled: true
@@ -46,6 +47,7 @@
         target_args:
           name: 'vpnfe'
           subnet: '192.168.2.0/24'
+          gateway: '192.168.2.1'
           dns:
             - '192.168.2.1'
           dhcp_enabled: true
@@ -64,6 +66,7 @@
         target_args:
           name: 'proxy'
           subnet: '192.168.3.0/24'
+          gateway: '192.168.3.1'
           dns:
             - '192.168.3.1'
           dhcp_enabled: true
