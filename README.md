@@ -37,7 +37,9 @@ In order to use this role with Ansible Tower/AWX, do the following:
 
 * Add a new credential type to Tower with the following configuration:
 Name: Openstack SSH key
+
 Input:
+
 ```
 fields:
   - id: key_name
@@ -52,14 +54,129 @@ required:
   - key_name
   - public_key
 ```
+
 Injector:
+
 ```
 extra_vars:
   openstack_ssh_key_name: '{{ key_name }}'
   openstack_ssh_public_key: '{{ public_key }}'
 ```
+
 * Configure the following credentials for your project
 	* Machine: with a RSA private key
 	* Openstack SSH: with the public key of this SSH key
 	* Openstack: the credentials for your Openstack service, for all details, download the RC file from Horizon -> API Access
 * Create your playbooks/workflows (see below)
+
+# Components
+After setting up the authentication as described above you can now start writing playbooks to deploy things on the Openstack service.
+
+## Networks
+A network can be deployed as follows, it will automatically be prefixed with 'net-' to avoid naming collisions with other components.
+
+The role will also provision a subnet (named 'subnet-{{ name }}').
+
+```
+- name: 'Create network'
+  import_role:
+    name: 'openstack'
+  vars:
+    target_action: 'network'
+    target_state: 'present'
+    target_args:
+      name: 'somenet'
+      subnet: '192.168.1.0/24'
+      gateway: '192.168.1.1'
+      dns:
+        - '192.168.1.1'
+      dhcp_enabled: true
+      routes:
+        - destination: '10.0.0.0/8'
+          nexthop: '192.168.1.1'
+      external: false
+```
+
+## Routers
+Routers can be used to connect multiple subnets together, and can also be used as external gateway to access the Internet (outbound connectivity only).
+
+Routers are created with the 'rtr-' prefix.
+
+```
+- name: 'Create router'
+  import_role:
+    name: 'openstack'
+  vars:
+    target_action: 'router'
+    target_state: 'present'
+    target_args:
+      name: 'mgmt'
+      interfaces:
+        - 'subnet-somenet'
+```
+
+## Compute instances with persistent storage
+The example below is how to create a Debian server with a public connected interface and a private interface.
+
+If defined, a hostgroup can also be created for the servers created with any of the policies mentioned in the os_server_group module documentation.
+
+NOTE: as long as https://github.com/ansible/ansible/pull/20969/files remains unmerged, this does not work, unless you provide a modded version of os_server.py with the fix from this PR.
+```
+- name: 'Create server'
+  import_role:
+    name: 'openstack'
+  vars:
+    target_action: 'server_persistent'
+    target_state: 'present'
+    target_args:
+      name: 'server'
+      image: 'Debian 9 (LTS)'
+      flavor: 'Standard 1GB'
+      disk_gb: 10
+      group_name: 'grp-mgmt'
+      group_policies:
+        - 'affinity'
+      networks:
+        - net-name: 'net-public'
+        - net-name: 'net-mgmt'
+          v4-fixed-ip: '192.168.1.10'
+      customization: |
+        {%- raw -%}#!/bin/bash
+        echo "auto eth1" >> /etc/network/interfaces
+        echo "iface eth1 inet dhcp" >> /etc/network/interfaces
+        ifup eth1
+        {%- endraw -%}
+```
+
+## Security groups
+Security groups are the firewall layer of the network, they will allow or disallow traffic leaving your instances.
+
+This role will create security groups, rules and apply the groups to the interfaces of servers.
+
+Groups are created with the 'secgrp-' prefix.
+
+```
+- name: 'Create security group'
+  import_role:
+    name: 'openstack'
+  vars:
+    target_action: 'security_group'
+    target_state: 'present'
+    target_args:
+      name: 'ext-shell'
+      description: 'Allow SSH and ICMP from external sources'
+      rules:
+        - proto: 'tcp'
+          port_min: 22
+          port_max: 22
+          remote_ips: '0.0.0.0/0' # or remote_secgrp: 'security group'
+          direction: 'ingress'
+        - proto: 'icmp'
+          port_min: '-1'
+          port_max: '-1'
+          remote_ips: '0.0.0.0/0' # or remote_secgrp: 'security group'
+          direction: 'ingress'
+      apply_hosts:
+        - name: 'server'
+          network: 'net-public'
+```

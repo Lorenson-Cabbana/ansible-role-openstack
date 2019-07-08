@@ -7,6 +7,7 @@
       region_name: "{{ openstack_region }}"
       state: "{{ target_state }}"
       policies: "{{ target_args.group_policies }}"
+    when: target_args.group_name is defined
 
   - name: 'Create host'
     os_server:
