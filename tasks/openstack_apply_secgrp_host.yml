@@ -15,8 +15,8 @@
 - name: 'Gather port IDs for host in networks'
   os_port_facts:
     cloud: "{{ openstack_auth_cloud_name }}"
-    network_id: "{{ openstack_networks[0]['id'] }}"
     filters:
+      network_id: "{{ openstack_networks[0]['id'] }}"
       device_id: "{{ openstack_servers[0]['id'] }}"
 
 - name: 'Apply security groups to port'
