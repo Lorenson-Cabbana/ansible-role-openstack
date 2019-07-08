@@ -22,7 +22,7 @@
 - name: 'Apply security groups to port'
   os_port:
     cloud: "{{ openstack_auth_cloud_name }}"
-    network_id: "{{ openstack_networks[0]['id'] }}"
+    network: "{{ openstack_networks[0]['id'] }}"
     region_name: "{{ openstack_region }}"
     state: 'present'
     name: "{{ port.name }}"
