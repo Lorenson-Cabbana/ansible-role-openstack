@@ -4,12 +4,12 @@ openstack_auth_cloud_name: 'openstack'                # Name of the credential i
 openstack_ssh_key_name: 'ansible_managed_rsa'         # SSH key name to use for deploying instances
 openstack_region: 'EU1'                               # Default region to use
 
-# API information, when auth_source == 'file'
+# API information, when auth_source == 'file', ignore when you use Tower
 openstack_api_url: 'https://horizon.example.com'      # URL for Horizon API
 openstack_api_validate: true                          # Validate Horizon SSL certificates
 openstack_api_user: 'ansible'                         # Useraccount to log in to Horizon
 openstack_api_pass: 'CloudyWithAChanceOfContainers'   # Password for the above user
 openstack_project_name: 'my_first_openstack'          # Project name, available via Horizon
 openstack_project_id: '123567890abcdef'               # ID for the project, available via Horizon
-
+openstack_ssh_key_file: 'id_openstack_rsa'            # Filename to use for the SSH key
 

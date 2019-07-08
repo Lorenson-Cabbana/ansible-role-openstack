@@ -45,7 +45,7 @@
 
   - name: 'Create RSA SSH keypair'
     openssh_keypair:
-      path: "{{ ansible_env.HOME }}/.ssh/id_openstack_rsa"
+      path: "{{ ansible_env.HOME }}/.ssh/{{ openstack_ssh_key_file }}"
       type: 'rsa'
       size: 4096
 
@@ -54,7 +54,7 @@
       cloud: "{{ openstack_auth_cloud_name }}"
       state: 'present'
       name: "{{ openstack_ssh_key_name }}"
-      public_key_file: "{{ ansible_env.HOME }}/.ssh/id_openstack_rsa.pub"
+      public_key_file: "{{ ansible_env.HOME }}/.ssh/{{ openstack_ssh_key_file }}.pub"
   when: openstack_auth_source == 'file'
 
 # WIP
