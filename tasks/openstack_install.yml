@@ -4,21 +4,17 @@
     gather_subset:
       - 'min'
   register: 'api_facts'
-  delegate_to: "{{ hostvars[item.item]['openstack_api_host'] }}"
 
 - name: 'Include OS specific vars'
   include_vars: "{{ ansible_os_family }}.yml"
   no_log: true
-  delegate_to: "{{ hostvars[item.item]['openstack_api_host'] }}"
 
 - name: 'Install dependencies'
   package:
     name:
       - 'openssh-client'
-  delegate_to: "{{ hostvars[item.item]['openstack_api_host'] }}"
 
 - name: 'Install dependencies from PiP'
   pip:
     name: "{{ openstacksdk_pkg }}"
     state: 'present'
-  delegate_to: "{{ hostvars[item.item]['openstack_api_host'] }}"

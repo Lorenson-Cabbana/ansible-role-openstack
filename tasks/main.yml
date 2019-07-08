@@ -4,7 +4,6 @@
     dependencies:
       - 'openstack'
   register: 'openstack_deps'
-  delegate_to: "{{ hostvars[item]['openstack_api_host'] }}"
   loop: "{{ query('inventory_hostnames', '{{ ansible_play_hosts }}' ) }}"
 
 - name: 'Install dependencies'
@@ -26,34 +25,47 @@
     msg: 'Invalid/unsuppored state!'
   when: target_state not in supported_states
 
-- name: 'Check required config dirs'
-  file:
-    state: 'directory'
-    path: "{{ ansible_env.HOME }}/{{ config_dir }}"
-  loop:
-    - '.config/openstack'
-    - '.ssh'
-  loop_control:
-    loop_var: 'config_dir'
 
-- name: 'Check OpenstackSDK config file'
-  template:
-    src: 'clouds.yml.j2'
-    dest: "{{ ansible_env.HOME }}/.config/openstack/clouds.yml"
-    mode: 0440
+- block:
+  - name: 'Check required config dirs'
+    file:
+      state: 'directory'
+      path: "{{ ansible_env.HOME }}/{{ config_dir }}"
+    loop:
+      - '.config/openstack'
+      - '.ssh'
+    loop_control:
+      loop_var: 'config_dir'
 
-- name: 'Create RSA SSH keypair'
-  openssh_keypair:
-    path: "{{ ansible_env.HOME }}/.ssh/id_openstack_rsa"
-    type: 'rsa'
-    size: 4096
+  - name: 'Check OpenstackSDK config file'
+    template:
+      src: 'clouds.yml.j2'
+      dest: "{{ ansible_env.HOME }}/.config/openstack/clouds.yml"
+      mode: 0440
 
-- name: 'Register keypair in Openstack'
-  os_keypair:
-    cloud: 'openstack'
-    state: 'present'
-    name: 'ansible_managed_rsa'
-    public_key_file: "{{ ansible_env.HOME }}/.ssh/id_openstack_rsa.pub"
+  - name: 'Create RSA SSH keypair'
+    openssh_keypair:
+      path: "{{ ansible_env.HOME }}/.ssh/id_openstack_rsa"
+      type: 'rsa'
+      size: 4096
+
+  - name: 'Register keypair in Openstack'
+    os_keypair:
+      cloud: "{{ openstack_auth_cloud_name }}"
+      state: 'present'
+      name: "{{ openstack_ssh_key_name }}"
+      public_key_file: "{{ ansible_env.HOME }}/.ssh/id_openstack_rsa.pub"
+  when: openstack_auth_source == 'file'
+
+# WIP
+- block:
+  - name: 'Register Tower SSH key in Openstack'
+    os_keypair:
+      cloud: "{{ openstack_auth_cloud_name }}"
+      state: 'present'
+      name: "{{ openstack_ssh_key_name }}"
+      public_key: "{{ openstack_ssh_public_key }}"
+  when: openstack_auth_source == 'tower'
 
 - name: "Run {{ target_action }} playbook"
   include_tasks: "openstack_{{ target_action }}.yml"

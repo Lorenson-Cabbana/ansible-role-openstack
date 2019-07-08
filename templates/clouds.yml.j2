@@ -1,6 +1,6 @@
 # {{ ansible_managed }}
 clouds:
-  openstack:
+  {{ openstack_auth_cloud_name }}:
     auth:
       auth_url: "{{ openstack_api_url }}"
       username: "{{ openstack_api_user }}"

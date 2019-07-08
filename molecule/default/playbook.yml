@@ -33,10 +33,8 @@
             - '192.168.1.1'
           dhcp_enabled: true
           routes:
-            - destination: '192.168.2.0/24'
-              nexthop: '192.168.1.10'
-            - destination: '192.168.3.0/24'
-              nexthop: '192.168.1.10'
+            - destination: '192.168.0.0/16'
+              nexthop: '192.168.1.1'
 
     - name: 'Create net-vpnfe'
       import_role:
@@ -52,10 +50,8 @@
             - '192.168.2.1'
           dhcp_enabled: true
           routes:
-            - destination: '192.168.1.0/24'
-              nexthop: '192.168.2.10'
-            - destination: '192.168.3.0/24'
-              nexthop: '192.168.2.10'
+            - destination: '192.168.0.0/16'
+              nexthop: '192.168.2.1'
 
     - name: 'Create net-proxy'
       import_role:
@@ -71,10 +67,8 @@
             - '192.168.3.1'
           dhcp_enabled: true
           routes:
-            - destination: '192.168.1.0/24'
-              nexthop: '192.168.3.10'
-            - destination: '192.168.2.0/24'
-              nexthop: '192.168.3.10'
+            - destination: '192.168.0.0/16'
+              nexthop: '192.168.3.1'
 
     - name: 'Create rtr-mgmt'
       import_role:
@@ -85,15 +79,9 @@
         target_args:
           name: 'mgmt'
           interfaces:
-            - net: 'net-mgmt'
-              subnet: 'subnet-mgmt'
-              portip: '192.168.1.10'
-            - net: 'net-vpnfe'
-              subnet: 'subnet-vpnfe'
-              portip: '192.168.2.10'
-            - net: 'net-proxy'
-              subnet: 'subnet-proxy'
-              portip: '192.168.3.10'
+            - 'subnet-mgmt'
+            - 'subnet-vpnfe'
+            - 'subnet-proxy'
 
     - name: 'Create srv-vpnbe'
       import_role:
@@ -112,7 +100,13 @@
           networks:
             - net-name: 'net-public'
             - net-name: 'net-mgmt'
-              v4-fixed-ip: '192.168.1.11'
+              v4-fixed-ip: '192.168.1.10'
+          customization: |
+            {%- raw -%}#!/bin/bash
+            echo "auto eth1" >> /etc/network/interfaces
+            echo "iface eth1 inet dhcp" >> /etc/network/interfaces
+            ifup eth1
+            {%- endraw -%}
 
     - name: 'Create srv-vpnfe'
       import_role:
@@ -131,7 +125,13 @@
           networks:
             - net-name: 'net-public'
             - net-name: 'net-vpnfe'
-              v4-fixed-ip: '192.168.2.11'
+              v4-fixed-ip: '192.168.2.10'
+          customization: |
+            {%- raw -%}#!/bin/bash
+            echo "auto eth1" >> /etc/network/interfaces
+            echo "iface eth1 inet dhcp" >> /etc/network/interfaces
+            ifup eth1
+            {%- endraw -%}
 
     - name: 'Create srv-proxy'
       import_role:
@@ -150,7 +150,13 @@
           networks:
             - net-name: 'net-public'
             - net-name: 'net-proxy'
-              v4-fixed-ip: '192.168.3.11'
+              v4-fixed-ip: '192.168.3.10'
+          customization: |
+            {%- raw -%}#!/bin/bash
+            echo "auto eth1" >> /etc/network/interfaces
+            echo "iface eth1 inet dhcp" >> /etc/network/interfaces
+            ifup eth1
+            {%- endraw -%}
 
     - name: 'Create secgrp-ext-shell'
       import_role:
@@ -188,26 +194,21 @@
             - name: 'srv-vpnfe'
               network: 'net-public'
 
-    - name: 'Create secgrp-mgmt-shell'
+    - name: 'Create secgrp-mgmt-any'
       import_role:
         name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
       vars:
         target_action: 'security_group'
         target_state: 'present'
         target_args:
-          name: 'mgmt-shell'
+          name: 'mgmt-any'
           rules:
             - proto: 'tcp'
-              port_min: 22
-              port_max: 22
+              port_min: 0
+              port_max: 65535
               remote_ips: '192.168.1.0/24'
-            - proto: 'tcp'
-              port_min: 3389
-              port_max: 3389
-              remote_ips: '192.168.1.0/24'
-          apply_routers:
-            - name: 'rtr-mgmt'
+          apply_hosts:
+            - name: 'srv-proxy'
               network: 'net-proxy'
-            - name: 'rtr-mgmt'
+            - name: 'srv-vpnfe'
               network: 'net-vpnfe'
-

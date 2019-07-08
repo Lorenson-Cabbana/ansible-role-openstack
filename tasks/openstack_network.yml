@@ -2,19 +2,18 @@
 - block:
   - name: 'Get network ID (remove only)'
     os_networks_facts:
-      cloud: 'openstack'
-      validate_certs: "{{ openstack_api_validate }}"
+      cloud: "{{ openstack_auth_cloud_name }}"
       name: "net-{{ target_args.name }}"
 
   - name: 'List ports (remove only)'
     os_port_facts:
-      cloud: 'openstack'
-      validate_certs: "{{ openstack_api_validate }}"
+      cloud: "{{ openstack_auth_cloud_name }}"
       filters:
         network_id: "{{ openstack_networks[0]['id'] }}"
 
   - name: 'Remove ports (remove only)'
     os_port:
+      cloud: "{{ openstack_auth_cloud_name }}"
       name: "{{ port.id }}"
       state: 'absent'
     loop: "{{ openstack_ports }}"
@@ -24,8 +23,7 @@
 
 - name: 'Ensure network'
   os_network:
-    cloud: 'openstack'
-    validate_certs: "{{ openstack_api_validate }}"
+    cloud: "{{ openstack_auth_cloud_name }}"
     state: "{{ target_state }}"
     name: "net-{{ target_args.name }}"
     external: "{{ target_args.external | default(false) }}"
@@ -35,8 +33,7 @@
 - block:
   - name: 'Create subnet'
     os_subnet:
-      cloud: 'openstack'
-      validate_certs: "{{ openstack_api_validate }}"
+      cloud: "{{ openstack_auth_cloud_name }}"
       name: "subnet-{{ target_args.name }}"
       state: "{{ target_state }}"
       region_name: "{{ openstack_region }}"
@@ -50,8 +47,7 @@
 
   - name: 'Create subnet'
     os_subnet:
-      cloud: 'openstack'
-      validate_certs: "{{ openstack_api_validate }}"
+      cloud: "{{ openstack_auth_cloud_name }}"
       name: "subnet-{{ target_args.name }}"
       state: "{{ target_state }}"
       region_name: "{{ openstack_region }}"

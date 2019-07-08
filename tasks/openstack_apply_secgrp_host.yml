@@ -2,28 +2,28 @@
 # security_group is provided via openstack_security_group.yml
 - name: 'Look up host ID'
   os_server_facts:
-    cloud: 'openstack'
-    validate_certs: "{{ openstack_api_validate }}"
+    cloud: "{{ openstack_auth_cloud_name }}"
     server: "{{ server.name }}"
+    region_name: "{{ openstack_region }}"
 
 - name: 'Look up network ID'
   os_networks_facts:
-    cloud: 'openstack'
-    validate_certs: "{{ openstack_api_validate }}"
+    cloud: "{{ openstack_auth_cloud_name }}"
     name: "{{ server.network }}"
+    region_name: "{{ openstack_region }}"
 
 - name: 'Gather port IDs for host in networks'
   os_port_facts:
-    cloud: 'openstack'
-    validate_certs: "{{ openstack_api_validate }}"
+    cloud: "{{ openstack_auth_cloud_name }}"
+    region_name: "{{ openstack_region }}"
+    network_id: "{{ openstack_networks[0]['id'] }}"
     filters:
       device_id: "{{ openstack_servers[0]['id'] }}"
-      network_id: "{{ openstack_networks[0]['id'] }}"
 
 - name: 'Apply security groups to port'
   os_port:
-    cloud: 'openstack'
-    validate_certs: "{{ openstack_api_validate }}"
+    cloud: "{{ openstack_auth_cloud_name }}"
+    network_id: "{{ openstack_networks[0]['id'] }}"
     state: 'present'
     name: "{{ port.name }}"
     security_groups: "{{ port.security_groups | join(',') }},{{ security_group }}"

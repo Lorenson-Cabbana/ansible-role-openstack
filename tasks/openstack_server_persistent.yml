@@ -2,16 +2,15 @@
 - block:
   - name: 'Create host group'
     os_server_group:
-      cloud: 'openstack'
-      validate_certs: "{{ openstack_api_validate }}"
+      cloud: "{{ openstack_auth_cloud_name }}"
       name: "{{ target_args.group_name }}"
+      region_name: "{{ openstack_region }}"
       state: "{{ target_state }}"
       policies: "{{ target_args.group_policies }}"
 
   - name: 'Create host'
     os_server:
-      cloud: 'openstack'
-      validate_certs: "{{ openstack_api_validate }}"
+      cloud: "{{ openstack_auth_cloud_name }}"
       name: "{{ target_args.name }}"
       state: 'present'
       image: "{{ target_args.image }}"
@@ -21,17 +20,18 @@
       boot_from_volume: true
       terminate_volume: true
       volume_size: "{{ target_args.disk_gb }}"
-      key_name: 'ansible_managed_rsa'
+      key_name: "{{ openstack_ssh_key_name }}"
       nics: "{{ target_args.networks }}"
       meta:
         hostname: "{{ target_args.name }}"
         group: "{{ target_args.group_name }}"
+      userdata: "{{ target_args.customization | default('') }}"
   when: target_state == 'present'
 
 - name: 'Remove host'
   os_server:
-    cloud: 'openstack'
-    validate_certs: "{{ openstack_api_validate }}"
+    cloud: "{{ openstack_auth_cloud_name }}"
     name: "{{ target_args.name }}"
+    region_name: "{{ openstack_region }}"
     state: 'absent'
   when: target_state == 'absent'

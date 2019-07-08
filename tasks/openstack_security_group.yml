@@ -1,26 +1,43 @@
 ---
 - name: 'Ensure Security group'
   os_security_group:
-    cloud: 'openstack'
-    validate_certs: "{{ openstack_api_validate }}"
+    cloud: "{{ openstack_auth_cloud_name }}"
     name: "secgrp-{{ target_args.name }}"
     description: "{{ target_args.description | default('') }}"
     state: "{{ target_state }}"
+    region_name: "{{ openstack_region }}"
   register: 'security_group_facts'
 
 - block:
   - name: 'Add rules to Security group'
     os_security_group_rule:
-      cloud: 'openstack'
-      validate_certs: "{{ openstack_api_validate }}"
+      cloud: "{{ openstack_auth_cloud_name }}"
       security_group: "secgrp-{{ target_args.name }}"
+      region_name: "{{ openstack_region }}"
       protocol: "{{ rule.proto }}"
       port_range_min: "{{ rule.port_min }}"
       port_range_max: "{{ rule.port_max }}"
+      direction: "{{ rule.direction | default('ingress') }}"
       remote_ip_prefix: "{{ rule.remote_ips }}"
     loop: "{{ target_args.rules }}"
     loop_control:
       loop_var: 'rule'
+    when: rule.remote_ips is defined
+
+  - name: 'Add rules to Security group'
+    os_security_group_rule:
+      cloud: "{{ openstack_auth_cloud_name }}"
+      security_group: "secgrp-{{ target_args.name }}"
+      region_name: "{{ openstack_region }}"
+      protocol: "{{ rule.proto }}"
+      port_range_min: "{{ rule.port_min }}"
+      port_range_max: "{{ rule.port_max }}"
+      direction: "{{ rule.direction | default('ingress') }}"
+      remote_group: "{{ rule.remote_secgrp }}"
+    loop: "{{ target_args.rules }}"
+    loop_control:
+      loop_var: 'rule'
+    when: rule.remote_secgrp is defined
 
   - name: 'Apply security groups to hosts'
     include_tasks: 'openstack_apply_secgrp_host.yml'
