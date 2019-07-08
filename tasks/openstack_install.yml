@@ -12,7 +12,7 @@
 - name: 'Install dependencies'
   package:
     name:
-      - 'openssh-client'
+      - "{{ openssh_client_pkg }}"
 
 - name: 'Install dependencies from PiP'
   pip:
