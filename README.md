@@ -61,5 +61,5 @@ extra_vars:
 * Configure the following credentials for your project
 	* Machine: with a RSA private key
 	* Openstack SSH: with the public key of this SSH key
-	* Openstack: the credentials for your Openstack service
+	* Openstack: the credentials for your Openstack service, for all details, download the RC file from Horizon -> API Access
 * Create your playbooks/workflows (see below)
