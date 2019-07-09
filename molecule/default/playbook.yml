@@ -14,62 +14,12 @@
         openstack_project_name: 'BUN000054 Playground'
         openstack_project_id: '798f47152791498893b8c61d3d240cf2'
         openstack_region: 'AMS'
+        openstack_ssh_key_name: 'molecule_managed_key'
       changed_when: false
 
 - name: 'Converge'
   hosts: 'openstack_api'
   tasks:
-    - name: 'Create net-mgmt'
-      import_role:
-        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
-      vars:
-        target_action: 'network'
-        target_state: 'present'
-        target_args:
-          name: 'mgmt'
-          subnet: '192.168.1.0/24'
-          gateway: '192.168.1.1'
-          dns:
-            - '192.168.1.1'
-          dhcp_enabled: true
-          routes:
-            - destination: '192.168.0.0/16'
-              nexthop: '192.168.1.1'
-
-    - name: 'Create net-vpnfe'
-      import_role:
-        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
-      vars:
-        target_action: 'network'
-        target_state: 'present'
-        target_args:
-          name: 'vpnfe'
-          subnet: '192.168.2.0/24'
-          gateway: '192.168.2.1'
-          dns:
-            - '192.168.2.1'
-          dhcp_enabled: true
-          routes:
-            - destination: '192.168.0.0/16'
-              nexthop: '192.168.2.1'
-
-    - name: 'Create net-proxy'
-      import_role:
-        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
-      vars:
-        target_action: 'network'
-        target_state: 'present'
-        target_args:
-          name: 'proxy'
-          subnet: '192.168.3.0/24'
-          gateway: '192.168.3.1'
-          dns:
-            - '192.168.3.1'
-          dhcp_enabled: true
-          routes:
-            - destination: '192.168.0.0/16'
-              nexthop: '192.168.3.1'
-
     - name: 'Create rtr-mgmt'
       import_role:
         name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
@@ -79,136 +29,16 @@
         target_args:
           name: 'mgmt'
           interfaces:
-            - 'subnet-mgmt'
             - 'subnet-vpnfe'
-            - 'subnet-proxy'
+            - 'subnet-vpnbe'
 
-    - name: 'Create srv-vpnbe'
+    - name: 'Remove interface from rtr-mgmt'
       import_role:
         name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
       vars:
-        target_action: 'server_persistent'
-        target_state: 'present'
+        target_action: 'router'
+        target_state: 'add_interface'
         target_args:
-          name: 'srv-vpnbe'
-          image: 'Debian 9 (LTS)'
-          flavor: 'Standard 1GB'
-          disk_gb: 10
-          group_name: 'grp-mgmt'
-          group_policies:
-            - 'affinity'
-          networks:
-            - net-name: 'net-public'
-            - net-name: 'net-mgmt'
-              v4-fixed-ip: '192.168.1.10'
-          customization: |
-            {%- raw -%}#!/bin/bash
-            echo "auto eth1" >> /etc/network/interfaces
-            echo "iface eth1 inet dhcp" >> /etc/network/interfaces
-            ifup eth1
-            {%- endraw -%}
-
-    - name: 'Create srv-vpnfe'
-      import_role:
-        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
-      vars:
-        target_action: 'server_persistent'
-        target_state: 'present'
-        target_args:
-          name: 'srv-vpnfe'
-          image: 'Debian 9 (LTS)'
-          flavor: 'Standard 1GB'
-          disk_gb: 10
-          group_name: 'grp-mgmt'
-          group_policies:
-            - 'affinity'
-          networks:
-            - net-name: 'net-public'
-            - net-name: 'net-vpnfe'
-              v4-fixed-ip: '192.168.2.10'
-          customization: |
-            {%- raw -%}#!/bin/bash
-            echo "auto eth1" >> /etc/network/interfaces
-            echo "iface eth1 inet dhcp" >> /etc/network/interfaces
-            ifup eth1
-            {%- endraw -%}
-
-    - name: 'Create srv-proxy'
-      import_role:
-        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
-      vars:
-        target_action: 'server_persistent'
-        target_state: 'present'
-        target_args:
-          name: 'srv-proxy'
-          image: 'Debian 9 (LTS)'
-          flavor: 'Standard 1GB'
-          disk_gb: 10
-          group_name: 'grp-mgmt'
-          group_policies:
-            - 'affinity'
-          networks:
-            - net-name: 'net-public'
-            - net-name: 'net-proxy'
-              v4-fixed-ip: '192.168.3.10'
-          customization: |
-            {%- raw -%}#!/bin/bash
-            echo "auto eth1" >> /etc/network/interfaces
-            echo "iface eth1 inet dhcp" >> /etc/network/interfaces
-            ifup eth1
-            {%- endraw -%}
-
-    - name: 'Create secgrp-ext-shell'
-      import_role:
-        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
-      vars:
-        target_action: 'security_group'
-        target_state: 'present'
-        target_args:
-          name: 'ext-shell'
-          rules:
-            - proto: 'tcp'
-              port_min: 22
-              port_max: 22
-              remote_ips: '0.0.0.0/0'
-          apply_hosts:
-            - name: 'srv-vpnbe'
-              network: 'net-public'
-
-    - name: 'Create secgrp-ext-openvpn'
-      import_role:
-        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
-      vars:
-        target_action: 'security_group'
-        target_state: 'present'
-        target_args:
-          name: 'ext-openvpn'
-          rules:
-            - proto: 'udp'
-              port_min: 1194
-              port_max: 1194
-              remote_ips: '0.0.0.0/0'
-          apply_hosts:
-            - name: 'srv-vpnbe'
-              network: 'net-public'
-            - name: 'srv-vpnfe'
-              network: 'net-public'
-
-    - name: 'Create secgrp-mgmt-any'
-      import_role:
-        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
-      vars:
-        target_action: 'security_group'
-        target_state: 'present'
-        target_args:
-          name: 'mgmt-any'
-          rules:
-            - proto: 'tcp'
-              port_min: 0
-              port_max: 65535
-              remote_ips: '192.168.1.0/24'
-          apply_hosts:
-            - name: 'srv-proxy'
-              network: 'net-proxy'
-            - name: 'srv-vpnfe'
-              network: 'net-vpnfe'
+          name: 'mgmt'
+          interfaces:
+            - 'subnet-mgmt'

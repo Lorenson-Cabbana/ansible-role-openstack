@@ -2,7 +2,57 @@
 - name: 'Ensure router'
   os_router:
     cloud: "{{ openstack_auth_cloud_name }}"
+    region_name: "{{ openstack_region }}"
     name: "rtr-{{ target_args.name }}"
     state: "{{ target_state }}"
     interfaces: "{{ target_args.interfaces | default([]) }}"
-    region_name: "{{ openstack_region }}"
+  when: target_state == 'present' or target_state == 'absent'
+
+- name: 'Update router'
+  block:
+    - name: 'Get router ID'
+      os_router:
+        cloud: "{{ openstack_auth_cloud_name }}"
+        region_name: "{{ openstack_region }}"
+        name: "rtr-{{ target_args.name }}"
+        state: 'present'
+      register: 'router_facts'
+
+    - name: 'Gather port IDs for router'
+      os_port_facts:
+        cloud: "{{ openstack_auth_cloud_name }}"
+        filters:
+          device_id: "{{ router_facts['id'] }}"
+
+    - name: 'Get subnet ID'
+      os_subnets_facts:
+        cloud: "{{ openstack_auth_cloud_name }}"
+        name: "{{ target_args.interfaces[0] }}"
+        # Removing interfaces will only work with one at a time for now
+      when: target_state == 'remove_interface'
+
+    - name: 'Create current interfaces list'
+      set_fact:
+        router_interfaces: "{{ router_interfaces }} + [ '{{ interface['fixed_ips'][0]['subnet_id'] }}' ]"
+      loop: "{{ openstack_ports }}"
+      loop_control:
+        loop_var: 'interface'
+
+    - name: 'Update router interface list'
+      os_router:
+        cloud: "{{ openstack_auth_cloud_name }}"
+        region_name: "{{ openstack_region }}"
+        name: "rtr-{{ target_args.name }}"
+        state: 'present'
+        interfaces: "{{ router_interfaces + target_args.interfaces }}"
+      when: target_state == 'add_interface'
+
+    - name: 'Update router interface list'
+      os_router:
+        cloud: "{{ openstack_auth_cloud_name }}"
+        region_name: "{{ openstack_region }}"
+        name: "rtr-{{ target_args.name }}"
+        state: 'present'
+        interfaces: "{{ router_interfaces | difference(openstack_subnets[0]['id']) }}"
+      when: target_state == 'remove_interface'
+  when: target_state == 'add_interface' or target_state == 'remove_interface'

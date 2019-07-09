@@ -2,3 +2,7 @@
 supported_states:
   - present
   - absent
+  - add_interface
+  - remove_interface
+
+router_interfaces: []
