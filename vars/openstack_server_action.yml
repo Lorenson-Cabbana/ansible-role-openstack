@@ -1,0 +1,11 @@
+---
+supported_states:
+  - stop
+  - start
+  - pause
+  - unpause
+  - lock
+  - unlock
+  - suspend
+  - resume
+  - rebuild
