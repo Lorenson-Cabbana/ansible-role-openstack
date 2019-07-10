@@ -38,13 +38,15 @@
     loop_control:
       loop_var: 'rule'
     when: rule.remote_secgrp is defined
-
-  - name: 'Apply security groups to hosts'
-    include_tasks: 'openstack_apply_secgrp_host.yml'
-    vars:
-      security_group: "{{ security_group_facts['secgroup']['id'] }}"
-    loop: "{{ target_args.apply_hosts }}"
-    loop_control:
-      loop_var: 'server'
-    when: target_args.apply_hosts is defined
   when: target_state == 'present'
+
+- name: 'Apply security groups to hosts'
+  include_tasks: 'openstack_apply_secgrp_host.yml'
+  vars:
+    security_group: "{{ security_group_facts['secgroup']['id'] }}"
+  loop: "{{ target_args.apply_hosts }}"
+  loop_control:
+    loop_var: 'server'
+  when:
+    - target_args.apply_hosts is defined
+    - target_state != 'absent'
