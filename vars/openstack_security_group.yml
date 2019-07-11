@@ -2,3 +2,4 @@
 supported_states:
   - present
   - absent
+  - apply
