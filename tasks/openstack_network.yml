@@ -29,6 +29,8 @@
     external: "{{ target_args.external | default(false) }}"
     region_name: "{{ openstack_region }}"
   register: 'network_created'
+  retries: 3
+  delay: 60
 
 - block:
   - name: 'Create subnet'
