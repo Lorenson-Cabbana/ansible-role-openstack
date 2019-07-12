@@ -31,6 +31,7 @@
   register: 'network_created'
   retries: 3
   delay: 60
+  until: not network_created.failed
 
 - block:
   - name: 'Create subnet'
