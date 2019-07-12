@@ -10,6 +10,10 @@
 
 - name: 'Update router'
   block:
+    - name: 'Create empty interfaces list'
+      set_fact:
+        router_interfaces: "[]"
+
     - name: 'Get router ID'
       os_router:
         cloud: "{{ openstack_auth_cloud_name }}"
@@ -38,7 +42,7 @@
       loop_control:
         loop_var: 'interface'
 
-    - name: 'Update router interface list'
+    - name: 'Update router interfaces'
       os_router:
         cloud: "{{ openstack_auth_cloud_name }}"
         region_name: "{{ openstack_region }}"
@@ -47,7 +51,7 @@
         interfaces: "{{ router_interfaces + target_args.interfaces }}"
       when: target_state == 'add_interface'
 
-    - name: 'Update router interface list'
+    - name: 'Update router interfaces'
       os_router:
         cloud: "{{ openstack_auth_cloud_name }}"
         region_name: "{{ openstack_region }}"

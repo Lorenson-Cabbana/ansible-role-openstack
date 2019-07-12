@@ -4,5 +4,3 @@ supported_states:
   - absent
   - add_interface
   - remove_interface
-
-router_interfaces: []
