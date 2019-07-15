@@ -9,6 +9,29 @@
   register: 'security_group_facts'
 
 - block:
+  - name: 'Remove default IPv4 Egress rule'
+    os_security_group_rule:
+      cloud: "{{ openstack_auth_cloud_name }}"
+      security_group: "secgrp-{{ target_args.name }}"
+      region_name: "{{ openstack_region }}"
+      state: 'absent'
+      protocol: 'any'
+      direction: 'egress'
+      remote_ip_prefix: '0.0.0.0/0'
+    when: security_group_facts.changed
+
+  - name: 'Remove default IPv6 Egress rule'
+    os_security_group_rule:
+      cloud: "{{ openstack_auth_cloud_name }}"
+      security_group: "secgrp-{{ target_args.name }}"
+      region_name: "{{ openstack_region }}"
+      state: 'absent'
+      protocol: 'any'
+      ethertype: 'IPv6'
+      direction: 'egress'
+      remote_ip_prefix: '::/0'
+    when: security_group_facts.changed
+
   - name: 'Add rules to Security group'
     os_security_group_rule:
       cloud: "{{ openstack_auth_cloud_name }}"

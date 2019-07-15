@@ -20,25 +20,17 @@
 - name: 'Converge'
   hosts: 'openstack_api'
   tasks:
-    - name: 'Create rtr-mgmt'
+    - name: 'Create'
       import_role:
         name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
       vars:
-        target_action: 'router'
+        target_action: 'security_group'
         target_state: 'present'
         target_args:
-          name: 'mgmt'
-          interfaces:
-            - 'subnet-vpnfe'
-            - 'subnet-vpnbe'
-
-    - name: 'Remove interface from rtr-mgmt'
-      import_role:
-        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
-      vars:
-        target_action: 'router'
-        target_state: 'add_interface'
-        target_args:
-          name: 'mgmt'
-          interfaces:
-            - 'subnet-mgmt'
+         name: 'bogus'
+         rules:
+           - proto: 'tcp'
+             port_min: 80
+             port_max: 80
+             remote_ips: '0.0.0.0/0'
+             direction: 'ingress'

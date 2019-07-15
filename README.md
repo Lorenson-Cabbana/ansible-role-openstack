@@ -21,6 +21,12 @@ This role will also setup the following:
 * Host groups to group systems together
 * Install required software to interact with the Openstack API
 
+# Bugs (and workarounds/fixes)
+Some functions of this role rely on fixes for bugs in Ansible's modules for Openstack, below is a list of PR's this role depends on:
+
+* https://github.com/ansible/ansible/pull/59055 for removing default added Security Group egress rules
+* https://github.com/ansible/ansible/pull/20969 for creating instances with a static IP address
+
 # Authentication setup
 This role can be used in one of 2 ways, command-line Ansible or via Ansible Tower/AWX. Within the configuration of this role, we refer to the 'Auth source' for either scenario.
 
