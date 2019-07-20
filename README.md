@@ -126,7 +126,7 @@ The example below is how to create a Debian server with a public connected inter
 
 If defined, a hostgroup can also be created for the servers created with any of the policies mentioned in the os_server_group module documentation.
 
-NOTE: as long as https://github.com/ansible/ansible/pull/20969/files remains unmerged, this does not work, unless you provide a modded version of os_server.py with the fix from this PR.
+NOTE: as long as [ansible #20969](https://github.com/ansible/ansible/pull/20969/files) remains unmerged, the static IP will not work, unless you provide a modded version of os_server.py with the fix from this PR.
 ```
 - name: 'Create server'
   import_role:
@@ -186,3 +186,7 @@ Groups are created with the 'secgrp-' prefix.
         - name: 'server'
           network: 'net-public'
 ```
+
+When security groups are created they always contain a set of rules that allow any egress traffic to 0.0.0.0/0, this can nullify the existing firewall policies you want to create to isolate project machines from each other.
+
+Unfortunately it is not possible to remove these rules without [ansible PR #?????](https://github.com/ansible/ansible/pull/?????), as matching rules with protocol 'any' is not possible. If you apply the PR on your copy of the os_security_group_rule module it will remove these default egress rules.
