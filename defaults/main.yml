@@ -12,4 +12,3 @@ openstack_api_pass: 'CloudyWithAChanceOfContainers'   # Password for the above u
 openstack_project_name: 'my_first_openstack'          # Project name, available via Horizon
 openstack_project_id: '123567890abcdef'               # ID for the project, available via Horizon
 openstack_ssh_key_file: 'id_openstack_rsa'            # Filename to use for the SSH key
-
