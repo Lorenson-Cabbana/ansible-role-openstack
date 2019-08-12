@@ -2,7 +2,7 @@
 - name: 'Check dependencies'
   python_requirements_facts:
     dependencies:
-      - 'openstack'
+      - 'openstacksdk'
   register: 'openstack_deps'
   loop: "{{ query('inventory_hostnames', '{{ ansible_play_hosts }}' ) }}"
 
