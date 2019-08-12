@@ -14,17 +14,19 @@
 
 - name: "Load {{ target_action }} variables"
   include_vars: "openstack_{{ target_action }}.yml"
+  ignore_errors: true
 
-- name: 'Check for complete input, skip is OK'
-  fail:
-    msg: 'Missing input, please check documentation'
-  when: target_state is not defined
+- block:
+  - name: 'Check for complete input, skip is OK'
+    fail:
+      msg: 'Missing input, please check documentation'
+    when: target_state is not defined
 
-- name: 'Check if state is allowed, skip is OK'
-  fail:
-    msg: 'Invalid/unsuppored state!'
-  when: target_state not in supported_states
-
+  - name: 'Check if state is allowed, skip is OK'
+    fail:
+      msg: 'Invalid/unsuppored state!'
+    when: target_state not in supported_states
+  when: supported_states is defined
 
 - block:
   - name: 'Check required config dirs'
