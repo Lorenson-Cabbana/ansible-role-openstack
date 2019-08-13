@@ -28,9 +28,9 @@
         filters:
           device_id: "{{ router_facts['id'] }}"
 
+    # Removing interfaces will only work with one at a time
     - block:
-      # Removing interfaces will only work with one at a time
-      - name: 'Get subnet ID'
+      - name: 'Get subnet ID (remove only)'
         os_subnets_facts:
           cloud: "{{ openstack_auth_cloud_name }}"
           name: "{{ target_args.interfaces[0]['subnet'] }}"
