@@ -55,7 +55,7 @@
         region_name: "{{ openstack_region }}"
         name: "rtr-{{ target_args.name }}"
         state: 'present'
-        interfaces: "{{ router_interfaces + removed_interface }}"
+        interfaces: "{{ router_interfaces + target_args.interfaces }}"
       when: target_state == 'add_interface'
 
     - name: 'Update router interfaces'
@@ -64,6 +64,6 @@
         region_name: "{{ openstack_region }}"
         name: "rtr-{{ target_args.name }}"
         state: 'present'
-        interfaces: "{{ router_interfaces | difference(target_args.interfaces) }}"
+        interfaces: "{{ router_interfaces | difference(removed_interface) }}"
       when: target_state == 'remove_interface'
   when: target_state == 'add_interface' or target_state == 'remove_interface'
