@@ -27,6 +27,17 @@
         hostname: "{{ target_args.name }}"
         group: "{{ target_args.group_name }}"
       userdata: "{{ target_args.customization | default('') }}"
+
+  - name: 'Associate floating IP'
+    os_floating_ip:
+      cloud: "{{ openstack_auth_cloud_name }}"
+      state: 'present'
+      server: "{{ target_args.name }}"
+      reuse: true
+    when:
+      - target_args.floating_ip is defined
+      - target_args.floating_ip
+
   when: target_state == 'present'
 
 - name: 'Remove host'
