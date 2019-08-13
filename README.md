@@ -41,7 +41,7 @@ In order to use this role with the commandline version of Ansible, without Tower
 ## Auth source: Tower
 In order to use this role with Ansible Tower/AWX, do the following:
 
-* Add a new credential type to Tower with the following configuration (you can also use the playbook in playbooks/)
+* Add a new credential type to Tower with the following configuration (you can also use the [playbooks/tower_add_credential_type.yml](add_credential_type) playbook)
 Name: Openstack SSH key
 
 Input:
