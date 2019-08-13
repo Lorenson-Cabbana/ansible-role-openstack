@@ -16,9 +16,10 @@
       cloud: "{{ openstack_auth_cloud_name }}"
       name: "{{ port.id }}"
       state: 'absent'
-    loop: "{{ openstack_ports | default([])}}"
+    loop: "{{ openstack_ports }}"
     loop_control:
       loop_var: 'port'
+    when: openstack_ports | length > 0
   when: target_state == 'absent'
 
 - name: 'Ensure network'
