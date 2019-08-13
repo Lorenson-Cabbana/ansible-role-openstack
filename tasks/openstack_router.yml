@@ -12,7 +12,7 @@
   block:
     - name: 'Create empty interfaces list'
       set_fact:
-        router_interfaces: "[]"
+        router_interfaces: []
 
     - name: 'Get router ID'
       os_router:
@@ -37,7 +37,7 @@
 
     - name: 'Create current interfaces list'
       set_fact:
-        router_interfaces: "{{ router_interfaces }} + [ '{{ interface['fixed_ips'][0]['subnet_id'] }}' ]"
+        router_interfaces: "{{ router_interfaces + [ {'net': interface['network_id'] , 'subnet': interface['fixed_ips'][0]['subnet_id'], 'portip': interface['fixed_ips'][0]['ip_address']} ] }}"
       loop: "{{ openstack_ports }}"
       loop_control:
         loop_var: 'interface'
