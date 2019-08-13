@@ -59,7 +59,6 @@
       public_key_file: "{{ ansible_env.HOME }}/.ssh/{{ openstack_ssh_key_file }}.pub"
   when: openstack_auth_source == 'file'
 
-# WIP
 - block:
   - name: 'Register Tower SSH key in Openstack'
     os_keypair:
