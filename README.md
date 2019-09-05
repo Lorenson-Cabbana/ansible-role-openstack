@@ -12,7 +12,6 @@ The following components can be deployed using this role:
 
 The following has not (yet) been included in this role:
 
-* Floating IPs
 * Volumes (beyond the default volume that is created with a Compute instance with persistent storage)
 
 This role will also setup the following:
@@ -24,8 +23,12 @@ This role will also setup the following:
 # Bugs (and workarounds/fixes)
 Some functions of this role rely on fixes for bugs in Ansible's modules for Openstack, below is a list of PR's this role depends on:
 
+Workarounds:
 * https://github.com/ansible/ansible/pull/59055 for removing default added Security Group egress rules
 * https://github.com/ansible/ansible/pull/20969 for creating instances with a static IP address
+
+Bugs:
+* https://github.com/ansible/ansible/issues/19863 at time of writing it is not possible to allocate a fixed floating IP to a server. Code is present that will allow this, but the module does not use it.
 
 # Authentication setup
 This role can be used in one of 2 ways, command-line Ansible or via Ansible Tower/AWX. Within the configuration of this role, we refer to the 'Auth source' for either scenario.

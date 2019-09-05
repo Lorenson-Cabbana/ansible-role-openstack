@@ -29,15 +29,27 @@
       userdata: "{{ target_args.customization | default('') }}"
 
   - name: 'Associate floating IP'
-    os_floating_ip:
-      cloud: "{{ openstack_auth_cloud_name }}"
-      state: 'present'
-      server: "{{ target_args.name }}"
-      reuse: true
-    when:
-      - target_args.floating_ip is defined
-      - target_args.floating_ip
-
+    block:
+      - name: 'Associate floating IP from pool'
+        os_floating_ip:
+          cloud: "{{ openstack_auth_cloud_name }}"
+          state: 'present'
+          server: "{{ target_args.name }}"
+          reuse: true
+          network: "{{ target_args.floating.pool }}"
+          nat_destination: "{{ target_args.floating.nat_destination }}"
+        when: target_args.floating.ip is not defined
+      - name: 'Associate fixed floating IP'
+        os_floating_ip:
+          cloud: "{{ openstack_auth_cloud_name }}"
+          state: 'present'
+          server: "{{ target_args.name }}"
+          reuse: true
+          network: "{{ target_args.floating.pool }}"
+          nat_destination: "{{ target_args.floating.nat_destination }}"
+          floating_ip_address: "{{ target_args.floating.ip }}"
+        when: target_args.floating.ip is defined
+    when: target_args.floating is defined
   when: target_state == 'present'
 
 - name: 'Remove host'
