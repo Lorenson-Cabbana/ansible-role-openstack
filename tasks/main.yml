@@ -45,18 +45,26 @@
       dest: "{{ ansible_env.HOME }}/.config/openstack/clouds.yml"
       mode: 0440
 
-  - name: 'Create RSA SSH keypair'
-    openssh_keypair:
-      path: "{{ ansible_env.HOME }}/.ssh/{{ openstack_ssh_key_file }}"
-      type: 'rsa'
-      size: 4096
-
   - name: 'Register keypair in Openstack'
-    os_keypair:
-      cloud: "{{ openstack_auth_cloud_name }}"
-      state: 'present'
-      name: "{{ openstack_ssh_key_name }}"
-      public_key_file: "{{ ansible_env.HOME }}/.ssh/{{ openstack_ssh_key_file }}.pub"
+    block:
+      - name: 'Check SSH keypair in Openstack'
+        os_keypair:
+          cloud: "{{ openstack_auth_cloud_name }}"
+          state: 'present'
+          name: "{{ openstack_ssh_key_name }}"
+          public_key_file: "{{ ansible_env.HOME }}/.ssh/{{ openstack_ssh_key_file }}.pub"
+    rescue:
+      - name: 'Create RSA SSH keypair'
+        openssh_keypair:
+          path: "{{ ansible_env.HOME }}/.ssh/{{ openstack_ssh_key_file }}"
+          type: 'rsa'
+          size: 4096
+      - name: 'Register keypair in Openstack'
+        os_keypair:
+          cloud: "{{ openstack_auth_cloud_name }}"
+          state: 'present'
+          name: "{{ openstack_ssh_key_name }}"
+          public_key_file: "{{ ansible_env.HOME }}/.ssh/{{ openstack_ssh_key_file }}.pub"
   when: openstack_auth_source == 'file'
 
 - block:
