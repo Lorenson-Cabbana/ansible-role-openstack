@@ -192,4 +192,4 @@ Groups are created with the 'secgrp-' prefix.
 
 When security groups are created they always contain a set of rules that allow any egress traffic to 0.0.0.0/0, this can nullify the existing firewall policies you want to create to isolate project machines from each other.
 
-Unfortunately it is not possible to remove these rules without [ansible PR #?????](https://github.com/ansible/ansible/pull/?????), as matching rules with protocol 'any' is not possible. If you apply the PR on your copy of the os_security_group_rule module it will remove these default egress rules.
+Unfortunately it is not possible to remove these rules without [ansible PR #59055](https://github.com/ansible/ansible/pull/59055), as matching rules with protocol 'any' is not possible. If you apply the PR on your copy of the os_security_group_rule module it will remove these default egress rules.
