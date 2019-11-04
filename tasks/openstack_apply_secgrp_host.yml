@@ -27,6 +27,6 @@
     state: 'present'
     name: "{{ port.name }}"
     security_groups: "{{ port.security_groups | join(',') }},{{ security_group }}"
-  loop: "{{ openstack_ports | default([) }}"
+  loop: "{{ openstack_ports | default([]) }}"
   loop_control:
     loop_var: 'port'
