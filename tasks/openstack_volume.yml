@@ -1,0 +1,18 @@
+---
+- name: 'Ensure Volume'
+  os_volume:
+    cloud: "{{ openstack_auth_cloud_name }}"
+    display_name: "vol-{{ target_args.name }}"
+    state: "{{ target_state }}"
+    size: "{{ target_args.size }}"
+    region_name: "{{ openstack_region }}"
+
+- name: 'Attach volume to host'
+  os_server_volume:
+    cloud: "{{ openstack_auth_cloud_name }}"
+    state: 'present'
+    server: "{{ target_args.attach_host }}"
+    volume: "vol-{{ target_args.name }}"
+  when:
+    - target_args.attach_host is defined
+    - target_state != 'absent'
