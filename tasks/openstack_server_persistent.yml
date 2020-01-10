@@ -23,6 +23,7 @@
       volume_size: "{{ target_args.disk_gb }}"
       key_name: "{{ openstack_ssh_key_name }}"
       nics: "{{ target_args.networks }}"
+      security_groups: "{{ target_args.security_groups | default('') }}"
       meta:
         hostname: "{{ target_args.name }}"
         group: "{{ target_args.group_name }}"
