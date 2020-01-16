@@ -7,7 +7,7 @@ clouds:
       password: "{{ openstack_api_pass }}"
       project_id: "{{ openstack_project_id }}"
       project_name: "{{ openstack_project_name }}"
-      user_domain_name: "Default"
+      user_domain_name: "{{ openstack_api_user_domain_name }}"
     region_name: "{{ openstack_region }}"
-    interface: "public"
-    identity_api_version: 3
+    interface: "{{ openstack_api_interface }}"
+    identity_api_version: {{ openstack_api_version }}
