@@ -25,7 +25,7 @@ Some functions of this role rely on fixes for bugs in Ansible's modules for Open
 
 Workarounds:
 * https://github.com/ansible/ansible/pull/59055 for removing default added Security Group egress rules
-* https://github.com/ansible/ansible/pull/20969 for creating instances with a static IP address
+* https://github.com/ansible/ansible/pull/66351 for removing default added Security Group egress rules (part 2)
 
 Bugs:
 * https://github.com/ansible/ansible/issues/19863 at time of writing it is not possible to allocate a fixed floating IP to a server. Code is present that will allow this, but the module does not use it.
