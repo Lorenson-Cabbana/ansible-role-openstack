@@ -1,36 +1,7 @@
 ---
-- name: 'Create inventory'
+- name: 'Converge'
   hosts: 'all'
   tasks:
-    - name: 'Add new host'
-      add_host:
-        name: "{{ ansible_facts['hostname'] }}"
-        group: 'openstack_api'
-        openstack_api_host: "{{ ansible_facts['hostname'] }}"
-        openstack_api_validate: true
-        openstack_api_url: 'https://identity.openstack.cloudvps.com/v3'
-        openstack_api_user: 'ansible@usn.nl'
-        openstack_api_pass: 'CEccvfT5Rq9CdPA_'
-        openstack_project_name: 'BUN000054 Playground'
-        openstack_project_id: '798f47152791498893b8c61d3d240cf2'
-        openstack_region: 'AMS'
-        openstack_ssh_key_name: 'molecule_managed_key'
-      changed_when: false
-
-- name: 'Converge'
-  hosts: 'openstack_api'
-  tasks:
-    - name: 'Create'
+    - name: 'Include role'
       import_role:
         name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
-      vars:
-        target_action: 'security_group'
-        target_state: 'present'
-        target_args:
-         name: 'bogus'
-         rules:
-           - proto: 'tcp'
-             port_min: 80
-             port_max: 80
-             remote_ips: '0.0.0.0/0'
-             direction: 'ingress'
