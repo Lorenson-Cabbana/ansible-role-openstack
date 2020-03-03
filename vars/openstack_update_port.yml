@@ -1,0 +1,4 @@
+---
+supported_states:
+  - add_allowed_address
+  - remove_allowed_address

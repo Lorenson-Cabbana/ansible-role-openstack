@@ -1,0 +1,57 @@
+---
+- name: 'Update port allowed_address_pairs'
+  block:
+    - name: 'Gather port information'
+      os_port_facts:
+        cloud: "{{ openstack_auth_cloud_name }}"
+        filters:
+          name: "{{ target_args.name }}"
+
+    - name: 'Create empty allowed_addresses list'
+      set_fact:
+        allowed_addresses: []
+
+    - name: 'Gather current allowed_addresses list'
+      set_fact:
+        allowed_addresses: >
+          {{ allowed_addresses +
+          [ {'ip_address': allowed_address['ip_address'] } ] }}
+      loop: "{{ openstack_ports[0]['allowed_address_pairs'] }}"
+      loop_control:
+        loop_var: 'allowed_address'
+
+    - name: 'Add new address to list'
+      set_fact:
+        allowed_addresses: >
+          {{ allowed_addresses +
+          [ {'ip_address': target_args['allowed_address'] } ] }}
+      when: target_state == 'add_allowed_address'
+
+      # You must dedup the request list before sending it to the API
+      # However, you can still get duplicates on the list, as the API does
+      # not seem to recognize 10.1.1.1 and 10.1.1.1/32 as the same IP.
+    - name: 'Deduplicate list'
+      set_fact:
+        allowed_addresses: "{{ allowed_addresses|unique }}"
+
+    - name: 'Update port allowed_address_pairs'
+      os_port:
+        cloud: "{{ openstack_auth_cloud_name }}"
+        region_name: "{{ openstack_region }}"
+        name: "{{ target_args.name }}"
+        allowed_address_pairs: "{{ allowed_addresses }}"
+      when: target_state == 'add_allowed_address'
+
+    - block:
+      - name: 'Set removed_address (remove only)'
+        set_fact:
+          removed_address:
+            - ip_address: "{{ target_args.allowed_address }}"
+      - name: 'Update port allowed_address_pairs'
+        os_port:
+          cloud: "{{ openstack_auth_cloud_name }}"
+          region_name: "{{ openstack_region }}"
+          name: "{{ target_args.name }}"
+          allowed_address_pairs: "{{ allowed_addresses | difference(removed_address) }}"
+      when: target_state == 'remove_allowed_address'
+  when: target_state == 'add_allowed_address' or target_state == 'remove_allowed_address'
