@@ -141,7 +141,7 @@ NOTE: as long as [ansible #20969](https://github.com/ansible/ansible/pull/20969/
       name: 'server'
       image: 'Debian 9 (LTS)'
       flavor: 'Standard 1GB'
-      disk_gb: 10
+      disk_gb: 10 # NOTE: this will create a _separate_ volume on OS to boot from, this might incur extra fees!
       group_name: 'grp-mgmt'
       group_policies:
         - 'affinity'

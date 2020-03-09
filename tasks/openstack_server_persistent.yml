@@ -9,7 +9,24 @@
       policies: "{{ target_args.group_policies }}"
     when: target_args.group_name is defined
 
-  - name: 'Create host'
+  - name: 'Create host (internal disk)'
+    os_server:
+      cloud: "{{ openstack_auth_cloud_name }}"
+      name: "{{ target_args.name }}"
+      state: 'present'
+      image: "{{ target_args.image }}"
+      flavor: "{{ target_args.flavor }}"
+      region_name: "{{ openstack_region }}"
+      public_ip: "{{ target_args.public | default(false) }}"
+      key_name: "{{ openstack_ssh_key_name }}"
+      nics: "{{ target_args.networks }}"
+      security_groups: "{{ target_args.security_groups | default([]) }}"
+      meta:
+        hostname: "{{ target_args.name }}"
+        group: "{{ target_args.group_name }}"
+      userdata: "{{ target_args.customization | default('') }}"
+
+  - name: 'Create host (boot from volume)'
     os_server:
       cloud: "{{ openstack_auth_cloud_name }}"
       name: "{{ target_args.name }}"
@@ -28,6 +45,7 @@
         hostname: "{{ target_args.name }}"
         group: "{{ target_args.group_name }}"
       userdata: "{{ target_args.customization | default('') }}"
+    when: target_args.disk_gb is defined
 
   - name: 'Associate floating IP'
     block:
