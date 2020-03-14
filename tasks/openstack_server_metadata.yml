@@ -2,6 +2,7 @@
 - name: 'Update host metadata'
   os_server_metadata:
     cloud: "{{ openstack_auth_cloud_name }}"
+    timeout: "{{ openstack_api_timeout }}"
     name: "{{ target_args.name }}"
     state: "{{ target_state }}"
     region_name: "{{ openstack_region }}"

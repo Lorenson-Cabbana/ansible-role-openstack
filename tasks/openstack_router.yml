@@ -2,6 +2,7 @@
 - name: 'Ensure router'
   os_router:
     cloud: "{{ openstack_auth_cloud_name }}"
+    timeout: "{{ openstack_api_timeout }}"
     region_name: "{{ openstack_region }}"
     name: "rtr-{{ target_args.name }}"
     state: "{{ target_state }}"
@@ -17,6 +18,7 @@
     - name: 'Get router ID'
       os_router:
         cloud: "{{ openstack_auth_cloud_name }}"
+        timeout: "{{ openstack_api_timeout }}"
         region_name: "{{ openstack_region }}"
         name: "rtr-{{ target_args.name }}"
         state: 'present'
@@ -25,6 +27,7 @@
     - name: 'Gather port IDs for router'
       os_port_facts:
         cloud: "{{ openstack_auth_cloud_name }}"
+        timeout: "{{ openstack_api_timeout }}"
         filters:
           device_id: "{{ router_facts['id'] }}"
 
@@ -33,6 +36,7 @@
       - name: 'Get subnet ID (remove only)'
         os_subnets_facts:
           cloud: "{{ openstack_auth_cloud_name }}"
+          timeout: "{{ openstack_api_timeout }}"
           name: "{{ target_args.interfaces[0]['subnet'] }}"
       - name: 'Collect information for interface to remove'
         set_fact:
@@ -55,6 +59,7 @@
     - name: 'Update router interfaces'
       os_router:
         cloud: "{{ openstack_auth_cloud_name }}"
+        timeout: "{{ openstack_api_timeout }}"
         region_name: "{{ openstack_region }}"
         name: "rtr-{{ target_args.name }}"
         state: 'present'
@@ -64,6 +69,7 @@
     - name: 'Update router interfaces'
       os_router:
         cloud: "{{ openstack_auth_cloud_name }}"
+        timeout: "{{ openstack_api_timeout }}"
         region_name: "{{ openstack_region }}"
         name: "rtr-{{ target_args.name }}"
         state: 'present'

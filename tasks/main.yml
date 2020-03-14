@@ -50,6 +50,7 @@
       - name: 'Check SSH keypair in Openstack'
         os_keypair:
           cloud: "{{ openstack_auth_cloud_name }}"
+          timeout: "{{ openstack_api_timeout }}"
           state: 'present'
           name: "{{ openstack_ssh_key_name }}"
           public_key_file: "{{ ansible_env.HOME }}/.ssh/{{ openstack_ssh_key_file }}.pub"
@@ -62,6 +63,7 @@
       - name: 'Register keypair in Openstack'
         os_keypair:
           cloud: "{{ openstack_auth_cloud_name }}"
+          timeout: "{{ openstack_api_timeout }}"
           state: 'present'
           name: "{{ openstack_ssh_key_name }}"
           public_key_file: "{{ ansible_env.HOME }}/.ssh/{{ openstack_ssh_key_file }}.pub"
@@ -71,6 +73,7 @@
   - name: 'Register Tower SSH key in Openstack'
     os_keypair:
       cloud: "{{ openstack_auth_cloud_name }}"
+      timeout: "{{ openstack_api_timeout }}"
       state: 'present'
       name: "{{ openstack_ssh_key_name }}"
       public_key: "{{ openstack_ssh_public_key }}"

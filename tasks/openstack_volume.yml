@@ -2,17 +2,42 @@
 - name: 'Ensure Volume'
   os_volume:
     cloud: "{{ openstack_auth_cloud_name }}"
-    display_name: "vol-{{ target_args.name }}"
+    timeout: "{{ openstack_api_timeout }}"
+    display_name: "{{ target_args.name }}"
     state: "{{ target_state }}"
     size: "{{ target_args.size }}"
     region_name: "{{ openstack_region }}"
+  when: target_args.snap_name is not defined
 
 - name: 'Attach volume to host'
   os_server_volume:
     cloud: "{{ openstack_auth_cloud_name }}"
+    timeout: "{{ openstack_api_timeout }}"
     state: 'present'
     server: "{{ target_args.attach_host }}"
-    volume: "vol-{{ target_args.name }}"
+    volume: "{{ target_args.name }}"
   when:
+    - target_args.snap_name is not defined
     - target_args.attach_host is defined
-    - target_state != 'absent'
+
+- name: 'Detach volume from host'
+  os_server_volume:
+    cloud: "{{ openstack_auth_cloud_name }}"
+    timeout: "{{ openstack_api_timeout }}"
+    state: 'absent'
+    server: "{{ target_args.detach_host }}"
+    volume: "{{ target_args.name }}"
+  when:
+    - target_args.snap_name is not defined
+    - target_args.detach_host is defined
+
+- name: 'Ensure volume snapshot'
+  os_volume_snapshot:
+    cloud: "{{ openstack_auth_cloud_name }}"
+    timeout: "{{ openstack_api_timeout }}"
+    state: "{{ target_state }}"
+    volume: "{{ target_args.name }}"
+    force: true
+    display_name: "{{ target_args.snap_name }}"
+  when:
+    - target_args.snap_name is defined

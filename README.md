@@ -7,12 +7,9 @@ The following components can be deployed using this role:
 
 * Routers
 * Networks
-* Compute Instances (with persistent storage only)
+* Compute Instances, including updating metadata
 * Security groups (including rules and application to Compute instances)
-
-The following has not (yet) been included in this role:
-
-* Volumes (beyond the default volume that is created with a Compute instance with persistent storage)
+* Volumes
 
 This role will also setup the following:
 
@@ -127,6 +124,8 @@ Routers are created with the 'rtr-' prefix.
 ## Compute instances with persistent storage
 The example below is how to create a Debian server with a public connected interface and a private interface.
 
+There are 2 ways to create the host, it will use the disk provided by the flavor, or it can create a new volume and boot from there.
+
 If defined, a hostgroup can also be created for the servers created with any of the policies mentioned in the os_server_group module documentation.
 
 NOTE: as long as [ansible #20969](https://github.com/ansible/ansible/pull/20969/files) remains unmerged, the static IP will not work, unless you provide a modded version of os_server.py with the fix from this PR.
@@ -155,6 +154,39 @@ NOTE: as long as [ansible #20969](https://github.com/ansible/ansible/pull/20969/
         echo "iface eth1 inet dhcp" >> /etc/network/interfaces
         ifup eth1
         {%- endraw -%}
+```
+
+## Get server info
+You can request all information the API has from an instance with the following snippet. It will register all facts into 'os_server_info'
+
+```
+- name: 'Get server facts'
+  import_role:
+    name: 'openstack'
+  vars:
+    target_action: 'server_info'
+    target_args:
+      name: 'server1'
+
+- name: 'List all security groups'
+  debug:
+    msg: "{{ os_server_info['openstack_servers'][0]['security_groups'] }}"
+```
+
+## Update server metadata
+You can also update the metadata of an existing server with the following code.
+```
+- name: 'Get server facts'
+  import_role:
+    name: 'openstack'
+  vars:
+    target_action: 'server_metadata'
+    target_state: 'present'
+    target_args:
+      name: 'server1'
+      meta:
+        key1: 'value1'
+        key2: 'value2'
 ```
 
 ## Security groups
@@ -193,3 +225,45 @@ Groups are created with the 'secgrp-' prefix.
 When security groups are created they always contain a set of rules that allow any egress traffic to 0.0.0.0/0, this can nullify the existing firewall policies you want to create to isolate project machines from each other.
 
 Unfortunately it is not possible to remove these rules without [ansible PR #59055](https://github.com/ansible/ansible/pull/59055), as matching rules with protocol 'any' is not possible. If you apply the PR on your copy of the os_security_group_rule module it will remove these default egress rules.
+
+## Volumes
+Volumes are used as either the boot volume for a VM or as an extra disk to store data on.
+
+This role can do the following actions on volumes:
+
+* Create / delete
+* Attach / Detach from host
+* Snapshot
+
+```
+- name: 'Create volume and attach to instance'
+  import_role:
+    name: 'openstack'
+  vars:
+    target_action: 'volume'
+    target_state: 'present'
+    target_args:
+      name: 'volume1'
+      size: 50
+      attach_host: 'server1'
+
+- name: 'Create volume snapshot'
+  import_role:
+    name: 'openstack'
+  vars:
+    target_action: 'volume'
+    target_state: 'present'
+    target_args:
+      name: 'volume1'
+      snap_name: 'before_big_change'
+
+- name: 'Detach volume from server1'
+  import_role:
+    name: 'openstack'
+  vars:
+    target_action: 'volume'
+    target_state: 'present'
+    target_args:
+      name: 'volume1'
+      detach_host: 'server1'
+```

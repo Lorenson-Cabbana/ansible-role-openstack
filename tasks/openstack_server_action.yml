@@ -2,6 +2,7 @@
 - name: 'Execute server action'
   os_server_action:
     cloud: "{{ openstack_auth_cloud_name }}"
+    timeout: "{{ openstack_api_timeout }}"
     region_name: "{{ openstack_region }}"
     action: "{{ target_state }}"
     server: "{{ target_args.name }}"
@@ -10,6 +11,7 @@
 - name: 'Rebuild server from image'
   os_server_action:
     cloud: "{{ openstack_auth_cloud_name }}"
+    timeout: "{{ openstack_api_timeout }}"
     region_name: "{{ openstack_region }}"
     action: "{{ target_state }}"
     server: "{{ target_args.name }}"

@@ -1,0 +1,8 @@
+---
+- name: 'Get server facts'
+  os_server_info:
+    cloud: "{{ openstack_auth_cloud_name }}"
+    timeout: "{{ openstack_api_timeout }}"
+    region_name: "{{ openstack_region }}"
+    server: "{{ target_args.name }}"
+  register: 'os_server_info'

@@ -3,18 +3,21 @@
 - name: 'Look up host ID'
   os_server_facts:
     cloud: "{{ openstack_auth_cloud_name }}"
+    timeout: "{{ openstack_api_timeout }}"
     server: "{{ server.name }}"
     region_name: "{{ openstack_region }}"
 
 - name: 'Look up network ID'
   os_networks_facts:
     cloud: "{{ openstack_auth_cloud_name }}"
+    timeout: "{{ openstack_api_timeout }}"
     name: "{{ server.network }}"
     region_name: "{{ openstack_region }}"
 
 - name: 'Gather port IDs for host in networks'
   os_port_facts:
     cloud: "{{ openstack_auth_cloud_name }}"
+    timeout: "{{ openstack_api_timeout }}"
     filters:
       network_id: "{{ openstack_networks[0]['id'] }}"
       device_id: "{{ openstack_servers[0]['id'] }}"
@@ -25,6 +28,7 @@
 - name: 'Apply security groups to port'
   os_port:
     cloud: "{{ openstack_auth_cloud_name }}"
+    timeout: "{{ openstack_api_timeout }}"
     network: "{{ openstack_networks[0]['id'] }}"
     region_name: "{{ openstack_region }}"
     state: 'present'
