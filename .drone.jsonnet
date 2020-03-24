@@ -5,9 +5,8 @@
     steps: [
       {
         name: "Lint code",
-        image: "quay.io/ansible/molecule",
+        image: "registry.element-networks.nl/tools/molecule",
         commands: [
-          "pip install -U ansible molecule",
           "molecule lint",
           "molecule syntax"
         ],
@@ -31,7 +30,7 @@
     steps: [
       {
         name: "Ansible Galaxy",
-        image: "quay.io/ansible/molecule",
+        image: "registry.element-networks.nl/tools/molecule",
         commands: [
           "ansible-galaxy login --github-token $$GITHUB_TOKEN",
           "ansible-galaxy import Thulium-Drake ansible-role-openstack --role-name=openstack",
