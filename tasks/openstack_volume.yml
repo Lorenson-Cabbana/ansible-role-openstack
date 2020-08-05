@@ -22,6 +22,7 @@
   when:
     - target_args.snap_name is not defined
     - target_args.attach_host is defined
+    - target_args.state != 'absent'
 
 - name: 'Detach volume from host'
   os_server_volume:
@@ -33,6 +34,7 @@
   when:
     - target_args.snap_name is not defined
     - target_args.detach_host is defined
+    - target_args.state != 'absent'
 
 - name: 'Ensure volume snapshot'
   os_volume_snapshot:
