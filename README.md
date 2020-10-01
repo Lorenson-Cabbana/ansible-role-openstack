@@ -1,3 +1,5 @@
+[![Build Status](https://drone.element-networks.nl/api/badges/Ansible/role-openstack/status.svg)](https://drone.element-networks.nl/Ansible/role-openstack)
+
 # Ansible toolkit for Openstack
 This role provides a means to provision multiple components of an Openstack enduser environment (NOTE: This does NOT deploy Openstack, it will only deploy stuff ON an Openstack service of your choosing).
 
