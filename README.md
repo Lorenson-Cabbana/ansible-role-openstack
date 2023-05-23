@@ -1,3 +1,6 @@
+# THIS ROLE IS NO LONGER MAINTAINED
+I no longer use this code and I don't have the means to test it.
+
 [![Build Status](https://drone.element-networks.nl/api/badges/Ansible/role-openstack/status.svg)](https://drone.element-networks.nl/Ansible/role-openstack)
 
 # Ansible toolkit for Openstack
